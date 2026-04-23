@@ -5,6 +5,7 @@ import { getSectorExposure } from "./services/portfolio.js";
 import { getSectorImpact } from "./services/market.js";
 import { generateInsights } from "./services/reasoning.js";
 import { mapNewsToSectors, attachNewsToInsights } from "./services/news.js";
+import { generateAIInsights } from "./services/llmReasoning.js";
 
 dotenv.config();
 
@@ -63,7 +64,42 @@ app.get("/insights", (req, res) => {
   res.json(insights);
 });
 
+app.get("/analyze", (req, res) => {
+  const market = loadJSON("./data/market_data.json");
+  const portfolios = loadJSON("./data/portfolios.json");
+  const news = loadJSON("./data/news_data.json");
 
+  const portfolio = portfolios.portfolios.PORTFOLIO_001;
+
+  const exposure = getSectorExposure(portfolio);
+  const impacts = getSectorImpact(exposure, market);
+  let insights = generateInsights(impacts);
+
+  const sectorNewsMap = mapNewsToSectors(news);
+  insights = attachNewsToInsights(insights, sectorNewsMap);
+
+  res.json({
+    exposure,
+    impacts,
+    insights,
+  });
+});
+
+app.get("/ai-insights", async (req, res) => {
+  const market = loadJSON("./data/market_data.json");
+  const portfolios = loadJSON("./data/portfolios.json");
+
+  const portfolio = portfolios.portfolios.PORTFOLIO_001;
+
+  const exposure = getSectorExposure(portfolio);
+  const impacts = getSectorImpact(exposure, market);
+
+  const aiInsights = await generateAIInsights(impacts);
+
+  res.json({
+    aiInsights,
+  });
+});
 
 app.listen(3000, () => {
   console.log("Server running on port 3000");
