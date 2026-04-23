@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-export async function generateAIInsights(impacts) {
+export async function generateAIInsights(primaryDriver) {
   const client = new Groq({
     apiKey: process.env.GROQ_API_KEY,
   });
@@ -11,31 +11,22 @@ export async function generateAIInsights(impacts) {
   const prompt = `
 You are a financial analyst.
 
-Explain WHY the portfolio performed this way using causal reasoning.
-
-Focus on:
-- Which sector impacted the portfolio the MOST
-- Why that sector moved (based on sentiment/change)
-- Make it sound like a financial advisor explanation
+Explain WHY the portfolio performed this way.
 
 STRICT RULES:
 - Respond ONLY in valid JSON
-- DO NOT include any explanation outside JSON
-- Be specific (mention % change or exposure if possible)
-- Highlight ONE primary cause clearly
-- Keep it concise
-
-IMPORTANT:
-- impactScore is NOT percentage, do NOT call it %
+- DO NOT include anything outside JSON
+- Be concise
+- Highlight ONE clear primary cause
 
 Format:
 {
-  "summary": "short summary",
+  "summary": "short explanation",
   "main_reason": "primary cause"
 }
 
 Data:
-${JSON.stringify(impacts, null, 2)}
+${JSON.stringify(primaryDriver, null, 2)}
 `;
 
   try {
@@ -55,7 +46,6 @@ ${JSON.stringify(impacts, null, 2)}
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
 
-        
         return {
           summary: parsed.summary || "No summary generated",
           main_reason: parsed.main_reason || "No main reason identified",
@@ -63,7 +53,7 @@ ${JSON.stringify(impacts, null, 2)}
       }
 
       throw new Error("No JSON found");
-    } catch (parseError) {
+    } catch {
       return {
         summary: "AI response could not be parsed cleanly.",
         main_reason: content.slice(0, 200),
@@ -73,11 +63,8 @@ ${JSON.stringify(impacts, null, 2)}
     console.error("Groq AI Error:", error.message);
 
     return {
-      summary: parsed.summary || "No summary generated",
-      main_reason:
-        typeof parsed.main_reason === "string"
-          ? parsed.main_reason
-          : parsed.main_reason?.reason || "No main reason identified",
+      summary: "AI failed",
+      main_reason: "LLM error",
     };
   }
 }

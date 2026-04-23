@@ -6,6 +6,7 @@ import { getSectorImpact } from "./services/market.js";
 import { generateInsights } from "./services/reasoning.js";
 import { mapNewsToSectors, attachNewsToInsights } from "./services/news.js";
 import { generateAIInsights } from "./services/llmReasoning.js";
+import { derivePrimaryDriver } from "./services/decision.engine.js";
 
 dotenv.config();
 
@@ -80,7 +81,9 @@ app.get("/analyze", async (req, res) => {
   let insights = generateInsights(impacts);
   insights = attachNewsToInsights(insights, sectorNewsMap);
 
-  const ai = await generateAIInsights(impacts);
+  const primaryDriver = derivePrimaryDriver(impacts);
+  
+  const ai = await generateAIInsights(primaryDriver);
 
   const topDriver = impacts[0];
 
