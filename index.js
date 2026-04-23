@@ -4,6 +4,7 @@ import { loadJSON } from "./dataLoader.js";
 import { getSectorExposure } from "./services/portfolio.js";
 import { getSectorImpact } from "./services/market.js";
 import { generateInsights } from "./services/reasoning.js";
+import { mapNewsToSectors, attachNewsToInsights } from "./services/news.js";
 
 dotenv.config();
 
@@ -47,16 +48,22 @@ app.get("/impact", (req, res) => {
 app.get("/insights", (req, res) => {
   const market = loadJSON("./data/market_data.json");
   const portfolios = loadJSON("./data/portfolios.json");
+  const news = loadJSON("./data/news_data.json");
 
   const portfolio = portfolios.portfolios.PORTFOLIO_001;
 
   const exposure = getSectorExposure(portfolio);
   const impacts = getSectorImpact(exposure, market);
 
-  const insights = generateInsights(impacts);
+  let insights = generateInsights(impacts);
+
+  const sectorNewsMap = mapNewsToSectors(news);
+  insights = attachNewsToInsights(insights, sectorNewsMap);
 
   res.json(insights);
 });
+
+
 
 app.listen(3000, () => {
   console.log("Server running on port 3000");
