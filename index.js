@@ -64,7 +64,7 @@ app.get("/insights", (req, res) => {
   res.json(insights);
 });
 
-app.get("/analyze", (req, res) => {
+app.get("/analyze", async (req, res) => {
   const market = loadJSON("./data/market_data.json");
   const portfolios = loadJSON("./data/portfolios.json");
   const news = loadJSON("./data/news_data.json");
@@ -72,13 +72,26 @@ app.get("/analyze", (req, res) => {
   const portfolio = portfolios.portfolios.PORTFOLIO_001;
 
   const exposure = getSectorExposure(portfolio);
-  const impacts = getSectorImpact(exposure, market);
-  let insights = generateInsights(impacts);
 
   const sectorNewsMap = mapNewsToSectors(news);
+
+  const impacts = getSectorImpact(exposure, market, sectorNewsMap);
+
+  let insights = generateInsights(impacts);
   insights = attachNewsToInsights(insights, sectorNewsMap);
 
+  const ai = await generateAIInsights(impacts);
+
+  const topDriver = impacts[0];
+
+  const confidence =
+    impacts.reduce((sum, s) => sum + s.causality, 0) / impacts.length;
+
   res.json({
+    summary: ai.summary,
+    mainReason: ai.main_reason,
+    confidence: Number(confidence.toFixed(2)),
+    topDriver,
     exposure,
     impacts,
     insights,
