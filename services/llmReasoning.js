@@ -25,6 +25,9 @@ STRICT RULES:
 - Highlight ONE primary cause clearly
 - Keep it concise
 
+IMPORTANT:
+- impactScore is NOT percentage, do NOT call it %
+
 Format:
 {
   "summary": "short summary",
@@ -46,14 +49,13 @@ ${JSON.stringify(impacts, null, 2)}
 
     const content = response.choices[0].message.content;
 
-    // 🔥 Robust JSON extraction (handles messy model output)
     try {
       const jsonMatch = content.match(/\{[\s\S]*\}/);
 
       if (jsonMatch) {
         const parsed = JSON.parse(jsonMatch[0]);
 
-        // extra safety: ensure keys exist
+        
         return {
           summary: parsed.summary || "No summary generated",
           main_reason: parsed.main_reason || "No main reason identified",
