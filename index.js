@@ -2,7 +2,7 @@ import express from "express";
 import dotenv from "dotenv";
 import { loadJSON } from "./dataLoader.js";
 import { getSectorExposure } from "./services/portfolio.js";
-
+import { getSectorImpact } from "./services/market.js";
 
 dotenv.config();
 
@@ -29,6 +29,18 @@ app.get("/exposure", (req, res) => {
   const exposure = getSectorExposure(portfolio);
 
   res.json(exposure);
+});
+
+app.get("/impact", (req, res) => {
+  const market = loadJSON("./data/market_data.json");
+  const portfolios = loadJSON("./data/portfolios.json");
+
+  const portfolio = portfolios.portfolios.PORTFOLIO_001;
+
+  const exposure = getSectorExposure(portfolio);
+  const impacts = getSectorImpact(exposure, market);
+
+  res.json(impacts);
 });
 
 app.listen(3000, () => {
