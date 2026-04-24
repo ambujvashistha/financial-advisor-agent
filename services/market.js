@@ -8,18 +8,27 @@ export function getSectorImpact(exposure, marketData, sectorNewsMap = {}) {
     const news = (sectorNewsMap[sector] || []).slice(0, 2);
 
     let causality = 0.2;
-    let conflict = false; 
+    let conflict = false;
 
     if (news.length > 0) {
       const hasPositive = news.some((n) => n.sentiment === "POSITIVE");
       const hasNegative = news.some((n) => n.sentiment === "NEGATIVE");
 
-      conflict = hasPositive && hasNegative; // 👈 move here
+      conflict = hasPositive && hasNegative;
 
-      if (marketSector.change_percent < 0 && hasNegative) causality = 1.0;
-      else if (marketSector.change_percent > 0 && hasPositive) causality = 1.0;
-      else if (!hasPositive && !hasNegative) causality = 0.2;
-      else causality = 0.3;
+      if (marketSector.change_percent < 0 && hasNegative && !hasPositive) {
+        causality = 1.0;
+      } else if (
+        marketSector.change_percent > 0 &&
+        hasPositive &&
+        !hasNegative
+      ) {
+        causality = 1.0;
+      } else if (!hasPositive && !hasNegative) {
+        causality = 0.2;
+      } else {
+        causality = 0.3;
+      }
     }
 
     const impactScore =
