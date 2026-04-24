@@ -10,7 +10,9 @@ import { derivePrimaryDriver } from "./services/decision.engine.js";
 import { detectRisk } from "./services/risk.js";
 import { generateRecommendation } from "./services/recommendation.js";
 import { calculatePortfolioPnL } from "./services/pnl.js";
+import cors from "cors";
 
+app.use(cors());
 dotenv.config();
 
 const app = express();
