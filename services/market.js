@@ -37,11 +37,11 @@ export function getSectorImpact(exposure, marketData, sectorNewsMap = {}) {
     impacts.push({
       sector,
       exposure: exposure[sector],
-      change: marketSector.change_percent,
+      change_percent: marketSector.change_percent,
       sentiment: marketSector.sentiment,
       causality,
       impactScore,
-      news,
+      relatedNews: news,
       conflict,
     });
   }

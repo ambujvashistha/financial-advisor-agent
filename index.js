@@ -73,7 +73,8 @@ app.get("/analyze", async (req, res) => {
   const portfolios = loadJSON("./data/portfolios.json");
   const news = loadJSON("./data/news_data.json");
 
-  const portfolio = portfolios.portfolios.PORTFOLIO_001;
+  const portfolioId = req.query.portfolioId || "PORTFOLIO_001";
+  const portfolio = portfolios.portfolios[portfolioId] || portfolios.portfolios.PORTFOLIO_001;
 
   const exposure = getSectorExposure(portfolio);
 
