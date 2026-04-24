@@ -98,7 +98,8 @@ export default function Dashboard() {
       };
       const backendId = portfolioMapping[selectedProfile] || 'PORTFOLIO_001';
       
-      const res = await fetch(`/analyze?portfolioId=${backendId}`);
+      const res = await fetch("https://financial-advisor-agent-wrqf.onrender.com/analyze")
+      
       if (!res.ok) throw new Error('Failed to fetch analysis data');
       const data = await res.json();
       setAnalysisData(data);
