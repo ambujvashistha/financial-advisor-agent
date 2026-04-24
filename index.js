@@ -7,6 +7,9 @@ import { generateInsights } from "./services/reasoning.js";
 import { mapNewsToSectors, attachNewsToInsights } from "./services/news.js";
 import { generateAIInsights } from "./services/llmReasoning.js";
 import { derivePrimaryDriver } from "./services/decision.engine.js";
+import { detectRisk } from "./services/risk.js";
+import { generateRecommendation } from "./services/recommendation.js";
+import { calculatePortfolioPnL } from "./services/pnl.js";
 
 dotenv.config();
 
@@ -82,19 +85,31 @@ app.get("/analyze", async (req, res) => {
   insights = attachNewsToInsights(insights, sectorNewsMap);
 
   const primaryDriver = derivePrimaryDriver(impacts);
-  
-  const ai = await generateAIInsights(primaryDriver);
 
-  const topDriver = impacts[0];
+  const riskData = detectRisk(exposure);
+
+  const recommendation = generateRecommendation(primaryDriver, riskData);
+
+  const portfolioPnL = calculatePortfolioPnL(impacts);
+
+  const ai = await generateAIInsights(primaryDriver);
 
   const confidence =
     impacts.reduce((sum, s) => sum + s.causality, 0) / impacts.length;
 
+  console.log("Analyze API called");
+  console.log("Top Driver:", primaryDriver.sector);
+  console.log("Portfolio Health:", riskData.portfolioHealth);
+
   res.json({
+    portfolioHealth: riskData.portfolioHealth,
+    riskInsight: riskData.riskInsight,
+    recommendation,
+    portfolioPnL,
     summary: ai.summary,
     mainReason: ai.main_reason,
     confidence: Number(confidence.toFixed(2)),
-    topDriver,
+    topDriver: primaryDriver,
     exposure,
     impacts,
     insights,
