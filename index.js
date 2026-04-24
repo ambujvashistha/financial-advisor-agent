@@ -1,5 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from "cors";
+
 import { loadJSON } from "./dataLoader.js";
 import { getSectorExposure } from "./services/portfolio.js";
 import { getSectorImpact } from "./services/market.js";
@@ -10,12 +12,13 @@ import { derivePrimaryDriver } from "./services/decision.engine.js";
 import { detectRisk } from "./services/risk.js";
 import { generateRecommendation } from "./services/recommendation.js";
 import { calculatePortfolioPnL } from "./services/pnl.js";
-import cors from "cors";
 
-app.use(cors());
 dotenv.config();
 
 const app = express();
+
+app.use(cors());
+app.use(express.json());
 
 app.get("/", (req, res) => {
   res.send("Server running");
@@ -76,7 +79,8 @@ app.get("/analyze", async (req, res) => {
   const news = loadJSON("./data/news_data.json");
 
   const portfolioId = req.query.portfolioId || "PORTFOLIO_001";
-  const portfolio = portfolios.portfolios[portfolioId] || portfolios.portfolios.PORTFOLIO_001;
+  const portfolio =
+    portfolios.portfolios[portfolioId] || portfolios.portfolios.PORTFOLIO_001;
 
   const exposure = getSectorExposure(portfolio);
 
