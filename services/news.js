@@ -12,6 +12,7 @@ export function mapNewsToSectors(newsData) {
       sectorNewsMap[sector].push({
         headline: article.headline,
         sentiment: article.sentiment,
+        scope: article.entities?.stocks?.length ? "STOCK" : "SECTOR",
       });
     });
   });
